@@ -1,0 +1,47 @@
+var http = require('http')
+var express = require('express')
+var app = express()
+var mongoClient = require('mongodb').MongoClient
+app.use(express.json())
+mongoClient.connect('mongodb://localhost:27017',(err,client)=>{ 
+   if(err){        
+       console.log("Error", err)   
+    }   
+      else{       
+        console.log("Connection is established")  
+        db = client.db('studb')  
+ }})
+app.get('/students',(req,res)=>{  
+    db.collection('stu').find().toArray((err,items)=>{    
+        console.log(items)   
+        res.write(JSON.stringify(items))    
+        res.end()   
+})})
+app.listen(2000,()=>{ 
+   console.log("Server Started")
+ })
+ app.post("/addstudent",(req,res)=>{  
+    console.log(req.body)   
+    db.collection('stu').insertOne(req.body)   
+    res.end("inserted")
+  })
+app.delete("/deletestudent/:id",(req,res)=>{  
+    console.log(req.body)   
+    var id = (req.params.id)   
+    db.collection("stu").deleteOne({"_id":id})  
+    res.end("deleted")
+ })
+app.put("/updatestudent/:id",(req,res)=>{  
+    console.log(req.body.name)  
+    var id =req.params.id    
+    console.log(id)    
+    db.collection("stu").updateOne({"_id":id},{$set:{name:req.body.name}})  
+    res.end()
+ })
+app.get("/getstu/:id",(req,res)=>{  
+    var id = parseInt(req.params.id)   
+    db.collection('stu').find({"_id":id}).toArray((err,items)=>{       
+       console.log(items)       
+       res.write(JSON.stringify(items))                       
+       res.end()
+ })})
